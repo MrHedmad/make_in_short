@@ -1,0 +1,19 @@
+[book]
+authors = ["Luca \"Hedmad\" Visentin"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Make in Short"
+description = "A tiny primer to Make"
+
+[output.html]
+git-repository-url = "https://github.com/MrHedmad/make_in_short"
+edit-url-template = "https://github.com/MrHedmad/make_in_short/edit/main/guide/{path}"
+
+[output.html.search]
+limit-results = 15
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 2
+boost-paragraph = 1
+
