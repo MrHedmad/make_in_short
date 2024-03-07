@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[Read the guide here]()
+[Read the guide here](https://mrhedmad.github.io/make_in_short/)
 
 </div>
 
