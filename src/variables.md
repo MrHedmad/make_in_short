@@ -11,12 +11,14 @@ my_variable = this is the content
 default:
 	echo "$(my_variable)"
 ```
+> Variables just one character long may omit the `()` wrapping the variable name.
+> E.g. `$(a)` is the same as `$a`. 
+
 To use the variable, make will **literally** remove `$(VAR)` and put the string
 inside the variable in its place.
-
-> This is important to remember.
-> Make **literally** substitutes the string in place of the variable, without
-> any magic.
+This is important to remember.
+Make **literally** substitutes the string in place of the variable, without
+any magic.
 
 The above file is *exactly the same* as this one:
 ```makefile
@@ -24,17 +26,20 @@ default:
 	echo: "this is the content"
 ```
 
+
 Make first reads the *whole* makefile, then substitutes the variables, and then
 executes the rules.
 
 > You will have noticed that the `$(VAR)` syntax is also used for shell variable
-> substitutions.
+> substitutions and function calls.
 > If you want to use *shell* variables in your rules, you will need to escape the
-> `$` used by make; e.g. use `$$(SHELL_VAR)` instead of `$(VAR)`.
+> `$` used by make by doubling it; e.g. use `$$(SHELL_VAR)` instead of `$(VAR)`.
 > While expanding variables, make will convert `$$` to `$`, and pass it to the
-> shell, therefore making it valid.
+> shell, therefore making the canonical `$` for shell invocations.
+>
+> However, you can use shell variables directly with `$()`: continue reading!
 
-Make copies **all** environment variables upon starting as if they where
+Make copies **all** shell environment variables upon starting as if they where
 written in the makefile.
 For example, this works:
 ```makefile
@@ -53,10 +58,10 @@ default:
 	echo $(some_var)
 ```
 If you run `make`, the output will be `"my text"`.
-If you run `some_var="alternative text"`, the output will be `"alternative text"`,
-since the assignment will not be made.
+If you run `some_var="alternative text" make`, the output will be `"alternative text"`,
+since the assignment in the makefile will not be made.
 
-> Try to keep your variables [`snake_case`](https://en.wikipedia.org/wiki/Snake_case).
+> Try to keep your makefile variables [`snake_case`](https://en.wikipedia.org/wiki/Snake_case).
 
 ## What to do with variables
 You can do a lot with variables.
@@ -78,67 +83,63 @@ output:
 
 > This is very useful to work with stuff like `Rscript`:
 > ```makefile
-> $(r) = Rscript --vanilla
+> r = Rscript --vanilla
 > output:
 > 	$(r) my_r_script.R > output
 > ```
 
-You can use them for variables that the user can override:
+You can use conditional assignment for variables that the user can override:
 ```makefile
 option ?= default_value
 
 default:
 	execute --var $(option)
 ```
-The user can use the default value or alternatively export a `option` variable
+The user can use the default value or alternatively export an `option` variable
 and override it.
+This can be useful when debugging makefiles: the default option is what you
+want to use for a "regular" run, but you can override it during development to
+get, e.g. debug information.
 
 ## Automatic variables
 When a recipe is run, make sets some automatic variables, so that you can
 write your recipes in a less verbose way.
 
-You can read the [list of all automatic variables](https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html)
+You can read the [full list of all automatic variables](https://www.gnu.org/software/make/manual/html_node/Automatic-Variables.html)
 in the make manual.
-
-> [!NOTE]
-> Variables just one character long - like most automatic variables - may omit
-> the `()` wrapping the variable name. E.g. `$(@)` is the same as `$@`. 
 
 Here are some of the most commonly used ones:
 
-`$@` is the target of the rule:
-```makefile
-path/to/target.txt: requirement.txt
-	cat requirement.txt > $@
-	# cat requirement.txt > path/to/target.txt
-```
-
-`$<` is the *first* requirement. Careful to use this when you have more than
-one requirement:
-```makefile
-path/to/target.txt: requirement.txt
-	cat $< > $@
-	# cat requirement.txt > path/to/target.txt
-```
-
-`$(@D)` and `$(@F)` are the directory of the target file and the name of the
-target file, respectively.
-This is very useful to create containing folders for output files:
-```makefile
-path/to/target.txt: requirement.txt
-	mkdir -p $(@D)
-	# mkdir -p path/to/
-	cat $< > $@
-	# cat requirement.txt > path/to/target.txt
-```
-You can do the same with `$(<D)` and `$(<F)`.
-
-`$^` is the *full* list of requirements, separated by spaces:
-```makefile
-target.txt: one.txt two.txt three.txt
-	concat_files $^
-	# concat_files one.txt two.txt three.txt
-```
+- `$@` is the target of the rule:
+  ```makefile
+  path/to/target.txt: requirement.txt
+  	cat requirement.txt > $@
+  	# cat requirement.txt > path/to/target.txt
+  ```
+- `$<` is the *first* requirement. Careful when using this when you have more than
+  one requirement, as it's order specific:
+  ```makefile
+  path/to/target.txt: requirement.txt
+  	cat $< > $@
+  	# cat requirement.txt > path/to/target.txt
+  ```
+- `$(@D)` and `$(@F)` are the directory of the target file and the name of the
+  target file, respectively.
+  This is very useful to create containing folders for output files:
+  ```makefile
+  path/to/target.txt: requirement.txt
+  	mkdir -p $(@D)
+  	# mkdir -p path/to/
+  	cat $< > $@
+  	# cat requirement.txt > path/to/target.txt
+  ```
+  You can do the same with `$(<D)` and `$(<F)` for the first requirement file.
+- `$^` is the *full* list of requirements, separated by spaces:
+  ```makefile
+  target.txt: one.txt two.txt three.txt
+  	concat_files $^
+  	# concat_files one.txt two.txt three.txt
+  ```
 
 > You may wonder how to select the N-th requirement.
 > There is no automatic variable for each requirement, but you can use `$^` to

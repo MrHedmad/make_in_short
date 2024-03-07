@@ -3,12 +3,17 @@
 This section covers a bunch of edge cases that you will encounter as you write
 more complex makefiles.
 
+## One shell
+One of the odd things about make is that *it runs each line in the body in a
+different shell*.
+
+
 ## Unknown prerequisites
 Assume you have a `create_random_files` function that does just that: it makes
 some `N` number of files, with unknown file names, in some output directory.
 
-You want to use all of these files as input to create a `all.txt` file, just like
-the above example.
+You want to use all of these files as input to create the `all.txt` file,
+just like the above example.
 You might write this makefile (that will **not** work):
 
 ```makefile
