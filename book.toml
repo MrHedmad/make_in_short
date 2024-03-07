@@ -8,7 +8,7 @@ description = "A tiny primer to Make"
 
 [output.html]
 git-repository-url = "https://github.com/MrHedmad/make_in_short"
-edit-url-template = "https://github.com/MrHedmad/make_in_short/edit/main/guide/{path}"
+edit-url-template = "https://github.com/MrHedmad/make_in_short/edit/main/{path}"
 
 [output.html.search]
 limit-results = 15
